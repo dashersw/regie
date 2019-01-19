@@ -1,0 +1,15 @@
+{
+  "name": "regie",
+  "version": "1.0.0",
+  "description": "An observable state management tool for vanilla JS applications based on Proxies",
+  "main": "index.js",
+  "keywords": [
+    "State management"
+  ],
+  "author": "Armagan Amcalar <armagan@amcalar.com>",
+  "license": "MIT",
+  "dependencies": {
+    "lodash.get": "^4.4.2",
+    "observable-slim": "github:dashersw/observable-slim"
+  }
+}
