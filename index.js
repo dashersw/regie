@@ -62,27 +62,28 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} }) => {
   }
 
   function observe(mapper, handler) {
+    let mapperFn = mapper
+
     if (typeof mapper == 'string') {
-      bus.on(mapper, handler)
-      return () => bus.removeListener(mapper, handler)
+      mapperFn = () => get(state, mapper)
     }
 
     let val
 
     try {
-      val = mapper()
+      val = mapperFn()
     } catch (e) {
-      return observeLater(mapper, handler)
+      return observeLater(mapperFn, handler)
     }
 
-    mapper.lastValue = val
+    mapperFn.lastValue = val
 
     if (val && val.__getPath) {
       bus.on(val.__getPath, handler)
       return () => bus.removeListener(val.__getPath, handler)
     }
 
-    return observeLater(mapper, handler)
+    return observeLater(mapperFn, handler)
   }
 
   const boundRegister = register(observe)
