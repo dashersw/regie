@@ -63,6 +63,7 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} }) => {
 
   function observe(mapper, handler) {
     let mapperFn = mapper
+    if (typeof mapper != 'function' && typeof mapper != 'string') mapperFn = () => mapper
 
     if (typeof mapper == 'string') {
       mapperFn = () => get(state, mapper)
