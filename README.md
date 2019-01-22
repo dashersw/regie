@@ -8,12 +8,6 @@
 
 **An observable state management tool for vanilla JS applications based on Proxies**
 
-## Installation
-
-```bash
-npm i regie
-```
-
 ## Example
 
 ```js
@@ -32,15 +26,32 @@ observe(state.items, (newValue, change) => {
 state.items.push('first!')
 ```
 
+## Installation
+
+```bash
+npm i regie
+```
+
+## Usage
+
 `observe` function accepts many forms, including a string path and a predicate. All of the following are the same:
 
 ```js
+const regie = require('regie')
+
+const initialState = {
+  items: []
+}
+
+const { state, observe } = regie({ initialState })
+
 observe(state.items, handler)
 observe(state => state.items, handler)
 observe(() => state.items, handler)
 observe('items', handler)
 
 const items = state.items
+
 observe(items, handler)
 observe(() => items, handler)
 ```
