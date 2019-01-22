@@ -38,14 +38,14 @@ observe(items, handler)
 observe(() => items, handler)
 ```
 
-regie also allows you to watch primitive values in a certain form. The following examples observe the _soon-to-exist_ first element of the array:
+regie also allows you to watch primitive values in a certain form. The following examples observe the _future_ first element of the array:
 
 ```js
 observe(() => state.items[0], handler)
 observe('items.0', handler)
 ```
 
-and the following examples observe even _sooner-to-exist_ details of the first element of the array:
+and the following examples observe _even farther into the future_ details of the first element of the array:
 
 ```js
 observe(() => state.items[0].name, handler)
