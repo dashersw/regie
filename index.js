@@ -52,6 +52,9 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
           off = observe(change.currentPath, handler)
         }
         mapper.lastValue = val
+      } else if (mapper.lastValue && typeof val == 'undefined') {
+        handler()
+        mapper.lastValue = undefined
       }
     }
 
