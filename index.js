@@ -3,7 +3,7 @@ const EventEmitter = require('events')
 const get = require('lodash.get')
 const register = require('./lib/register')
 
-module.exports = ({ initialState = {}, actions = {}, mutations = {} }) => {
+module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
   const bus = new EventEmitter()
 
   const state = slim.create(initialState, false, (changes) => {
