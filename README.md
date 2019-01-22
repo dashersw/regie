@@ -1,4 +1,11 @@
 # regie
+
+[![npm version](https://badge.fury.io/js/regie.svg)](https://badge.fury.io/js/regie)
+[![Build Status](https://travis-ci.org/dashersw/regie.svg?branch=master)](https://travis-ci.org/dashersw/regie)
+[![Coverage Status](https://coveralls.io/repos/github/dashersw/regie/badge.svg)](https://coveralls.io/github/dashersw/regie)
+[![dependencies Status](https://david-dm.org/dashersw/regie/status.svg)](https://david-dm.org/dashersw/regie)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/dashersw/regie/master/LICENSE)
+
 **An observable state management tool for vanilla JS applications based on Proxies**
 
 ## Installation
