@@ -32,6 +32,8 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
       try {
         val = mapper(state)
       } catch (e) {
+        // a previously known and watched value (and its parent) is probably deleted
+        // so call the handler with value undefined and update lastValue to undefined.
         if (mapper.lastValue) handler()
         mapper.lastValue = undefined
         return
