@@ -1,6 +1,6 @@
 {
   "name": "regie",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "An observable state management tool for vanilla JS applications based on Proxies",
   "main": "index.js",
   "keywords": [
