@@ -30,7 +30,7 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} }) => {
     function observer(value, change) {
       let val
       try {
-        val = mapper()
+        val = mapper(state)
       } catch (e) {
         if (mapper.lastValue) handler()
         mapper.lastValue = undefined
@@ -39,7 +39,7 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} }) => {
 
       if (typeof val != 'undefined' && val.__getPath) {
         bus.removeListener('root', observer)
-        handler(mapper())
+        handler(mapper(state))
         off = observe(mapper, handler)
         return
       } else if (typeof val != 'undefined' ) {
