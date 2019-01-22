@@ -10,6 +10,6 @@
   "license": "MIT",
   "dependencies": {
     "lodash.get": "^4.4.2",
-    "observable-slim": "github:dashersw/observable-slim"
+    "observable-slim": "0.1.5"
   }
 }
