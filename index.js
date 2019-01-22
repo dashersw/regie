@@ -8,8 +8,12 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
 
   const state = slim.create(initialState, false, (changes) => {
     changes.forEach(change => {
-      if (change.type == 'update' && change.property == 'length' && Array.isArray(change.target) && change.target.length == change.newValue)
+      if (change.type == 'update' &&
+      change.property == 'length' &&
+      Array.isArray(change.target) &&
+      change.target.length == change.newValue) {
         return
+      }
 
       const paths = change.currentPath.split('.')
       while (paths.length) {
@@ -17,6 +21,7 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
         if (path in bus._events) {
           bus.emit(path, get(state, path), change)
         }
+
         paths.pop()
       }
 
@@ -24,10 +29,10 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
     })
   })
 
-  function observeLater(mapper, handler) {
+  function observeLater (mapper, handler) {
     let off
 
-    function observer(value, change) {
+    function observer (value, change) {
       let val
       try {
         val = mapper(state)
@@ -43,8 +48,7 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
         bus.removeListener('root', observer)
         handler(mapper(state))
         off = observe(mapper, handler)
-        return
-      } else if (typeof val != 'undefined' ) {
+      } else if (typeof val != 'undefined') {
         if (!mapper.lastValue || mapper.lastValue != val) {
           handler(val)
         }
@@ -61,7 +65,7 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
     return () => off()
   }
 
-  function observe(mapper, handler) {
+  function observe (mapper, handler) {
     let mapperFn = mapper
     if (typeof mapper != 'function' && typeof mapper != 'string') mapperFn = () => mapper
 
@@ -98,11 +102,16 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
     mutations: boundMutations
   }
 
-  Object.keys(actions).forEach(key => boundActions[key] = actions[key].bind(store, { actions: boundActions, mutations: boundMutations, state }))
-  Object.keys(mutations).forEach(key => boundMutations[key] = mutations[key].bind(store, { mutations: boundMutations, state }))
+  Object.keys(actions).forEach(key => {
+    boundActions[key] = actions[key].bind(store, { actions: boundActions, mutations: boundMutations, state })
+  })
+
+  Object.keys(mutations).forEach(key => {
+    boundMutations[key] = mutations[key].bind(store, { mutations: boundMutations, state })
+  })
 
   return {
     ...store,
-    $$register: boundRegister,
+    $$register: boundRegister
   }
 }
