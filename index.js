@@ -2,7 +2,6 @@ const slim = require('observable-slim')
 const EventEmitter = require('events')
 const get = require('lodash.get')
 const register = require('./lib/register')
-const bindCollection = require('./lib/bindCollection')
 
 module.exports = ({ initialState = {}, actions = {}, mutations = {} }) => {
   const bus = new EventEmitter()
@@ -88,14 +87,21 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} }) => {
   }
 
   const boundRegister = register(observe)
-  const boundActions = Object.keys(actions).map(key => [key, actions[key].bind({ actions, mutations })])
-  const boundMutations = Object.keys(actions).map(key => [key, actions[key].bind({ state, mutations })])
+  const boundActions = {}
+  const boundMutations = {}
 
-  return {
+  const store = {
     state,
     observe,
+    actions: boundActions,
+    mutations: boundMutations
+  }
+
+  Object.keys(actions).forEach(key => boundActions[key] = actions[key].bind(store, { actions: boundActions, mutations: boundMutations, state }))
+  Object.keys(mutations).forEach(key => boundMutations[key] = mutations[key].bind(store, { mutations: boundMutations, state }))
+
+  return {
+    ...store,
     $$register: boundRegister,
-    actions: bindCollection(boundActions),
-    mutations: bindCollection(boundMutations)
   }
 }
