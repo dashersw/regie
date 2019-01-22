@@ -46,11 +46,7 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
         if (!mapper.lastValue || mapper.lastValue != val) {
           handler(val)
         }
-        else if (change.newValue === val) {
-          bus.removeListener('root', observer)
-          handler(val)
-          off = observe(change.currentPath, handler)
-        }
+
         mapper.lastValue = val
       } else if (mapper.lastValue && typeof val == 'undefined') {
         handler()
