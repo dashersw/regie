@@ -37,12 +37,12 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} }) => {
         return
       }
 
-      if (val && val.__getPath) {
+      if (typeof val != 'undefined' && val.__getPath) {
         bus.removeListener('root', observer)
         handler(mapper())
         off = observe(mapper, handler)
         return
-      } else if (val) {
+      } else if (typeof val != 'undefined' ) {
         if (!mapper.lastValue || mapper.lastValue != val) {
           handler(val)
         }
@@ -78,7 +78,7 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} }) => {
 
     mapperFn.lastValue = val
 
-    if (val && val.__getPath) {
+    if (typeof val != 'undefined' && val.__getPath) {
       bus.on(val.__getPath, handler)
       return () => bus.removeListener(val.__getPath, handler)
     }
