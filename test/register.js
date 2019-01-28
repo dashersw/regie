@@ -11,7 +11,7 @@ test('Register regie as a plugin to another class', t => {
 
   $$register({ Component })
 
-  t.is(typeof Component.prototype.created, 'function')
+  t.is(typeof Component.prototype.createdHooks, 'function')
   t.true(Array.isArray(Component.prototype.__regie_changes__))
 })
 
@@ -31,6 +31,12 @@ test.cb('Utilize existing __regie_changes__ getter on a component and observe st
 
       this.created()
     }
+
+    created () {
+      this.createdHooks()
+    }
+
+    createdHooks () {}
 
     get __regie_changes__ () {
       return [[({ state }) => () => state.val, () => val => cb(val)]]
@@ -54,6 +60,10 @@ test.cb('Utilize magic observer method on a component and observe state change',
       this.props = state
 
       this.created()
+    }
+
+    created () {
+      this.createdHooks()
     }
 
     ['observe val'] (newValue) {
