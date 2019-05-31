@@ -39,23 +39,23 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
       } catch (e) {
         // a previously known and watched value (and its parent) is probably deleted
         // so call the handler with value undefined and update lastValue to undefined.
-        if (typeof mapper.lastValue != 'undefined') handler()
+        if (typeof mapper.lastValue != 'undefined') handler(undefined, change)
         mapper.lastValue = undefined
         return
       }
 
       if (typeof val != 'undefined' && val.__getPath) {
         bus.removeListener('root', observer)
-        handler(mapper(state))
+        handler(mapper(state), change)
         off = observe(mapper, handler)
       } else if (typeof val != 'undefined') {
         if (typeof mapper.lastValue == 'undefined' || mapper.lastValue != val) {
-          handler(val)
+          handler(val, change)
         }
 
         mapper.lastValue = val
       } else if (typeof mapper.lastValue != 'undefined' && typeof val == 'undefined') {
-        handler()
+        handler(undefined, change)
         mapper.lastValue = undefined
       }
     }
