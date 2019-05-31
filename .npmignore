@@ -1,0 +1,8 @@
+.history
+node_modules
+coverage
+.nyc_output
+/.vscode
+/.travis.yml
+/test
+/example.js
