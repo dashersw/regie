@@ -1,9 +1,10 @@
 const slim = require('observable-slim')
 const EventEmitter = require('events')
 const get = require('lodash.get')
+const isEqual = require('lodash.isequal')
 const register = require('./lib/register')
 
-module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
+module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { deep } = { deep: false }) => {
   const bus = new EventEmitter()
 
   const state = slim.create(initialState, false, (changes) => {
@@ -14,6 +15,8 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
       change.target.length == change.newValue) {
         return
       }
+
+      if (deep && isEqual(change.newValue, change.previousValue)) return
 
       const paths = change.currentPath.split('.')
       while (paths.length) {
@@ -44,12 +47,8 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
         return
       }
 
-      if (typeof val != 'undefined' && val.__getPath) {
-        bus.removeListener('root', observer)
-        handler(mapper(state), change)
-        off = observe(mapper, handler)
-      } else if (typeof val != 'undefined') {
-        if (typeof mapper.lastValue == 'undefined' || mapper.lastValue != val) {
+      if (typeof val != 'undefined') {
+        if (typeof mapper.lastValue == 'undefined' || deep ? !isEqual(mapper.lastValue, val) : mapper.lastValue != val) {
           handler(val, change)
         }
 
