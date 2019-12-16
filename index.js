@@ -45,9 +45,9 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
       }
 
       if (typeof val != 'undefined' && val.__getPath) {
-        bus.removeListener('root', observer)
+        // bus.removeListener('root', observer)
         handler(mapper(state), change)
-        off = observe(mapper, handler)
+        // off = observe(mapper, handler)
       } else if (typeof val != 'undefined') {
         if (typeof mapper.lastValue == 'undefined' || mapper.lastValue != val) {
           handler(val, change)
