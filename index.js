@@ -40,7 +40,9 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { de
 
       if (typeof val != 'undefined') {
         const path = val.__getPath || mapper.path
-        if (path && (!change.currentPath.startsWith(path) && !path.startsWith(change.currentPath))) return
+        if (mapper.path && (change.currentPath.startsWith(mapper.path) || mapper.path.startsWith(change.currentPath)) && ((deep && change.newValue == change.previousValue) ? !isEqual(change.newValue, change.previousValue) : change.newValue != change.previousValue)) {
+          handler(val, change)
+        } else if (path && (!change.currentPath.startsWith(path) && !path.startsWith(change.currentPath))) return
         else if (get(state, change.currentPath) == val) {
           handler(val, change)
         } else if (typeof mapper.lastValue == 'undefined' || (deep && change.newValue == change.previousValue) ? !isEqual(mapper.lastValue, val) : mapper.lastValue != val || (val.__targetPosition && val.__targetPosition != value.__targetPosition)) {
