@@ -18,16 +18,6 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { de
 
       if (deep && isEqual(change.newValue, change.previousValue)) return
 
-      const paths = change.currentPath.split('.')
-      while (paths.length) {
-        const path = paths.join('.')
-        if (path in bus._events) {
-          bus.emit(path, get(state, path), change)
-        }
-
-        paths.pop()
-      }
-
       bus.emit('root', state, change)
     })
   })
@@ -48,7 +38,7 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { de
       }
 
       if (typeof val != 'undefined') {
-        if (typeof mapper.lastValue == 'undefined' || deep ? !isEqual(mapper.lastValue, val) : mapper.lastValue != val) {
+        if (typeof mapper.lastValue == 'undefined' || deep ? !isEqual(mapper.lastValue, val) : mapper.lastValue != val || (val.__targetPosition && val.__targetPosition != value.__targetPosition)) {
           handler(val, change)
         }
 
@@ -81,11 +71,6 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { de
     }
 
     mapperFn.lastValue = val
-
-    if (typeof val != 'undefined' && val.__getPath) {
-      bus.on(val.__getPath, handler)
-      return () => bus.removeListener(val.__getPath, handler)
-    }
 
     return observeLater(mapperFn, handler)
   }
