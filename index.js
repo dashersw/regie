@@ -3,6 +3,7 @@ const EventEmitter = require('events')
 const get = require('lodash.get')
 const isEqual = require('lodash.isequal')
 const register = require('./lib/register')
+const isPrimitive = require('is-primitive')
 
 module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { deep } = { deep: false }) => {
   const bus = new EventEmitter()
@@ -39,10 +40,10 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { de
 
       if (typeof val != 'undefined') {
         const path = val.__getPath || mapper.path
-        if (path && !change.currentPath.startsWith(path)) return
+        if (path && (!change.currentPath.startsWith(path) && !path.startsWith(change.currentPath))) return
         else if (get(state, change.currentPath) == val) {
           handler(val, change)
-        } else if (typeof mapper.lastValue == 'undefined' || deep ? !isEqual(mapper.lastValue, val) : mapper.lastValue != val || (val.__targetPosition && val.__targetPosition != value.__targetPosition)) {
+        } else if (typeof mapper.lastValue == 'undefined' || (deep && change.newValue == change.previousValue) ? !isEqual(mapper.lastValue, val) : mapper.lastValue != val || (val.__targetPosition && val.__targetPosition != value.__targetPosition)) {
           handler(val, change)
         }
 
@@ -73,6 +74,10 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { de
       val = mapperFn()
     } catch (e) {
       return observeLater(mapperFn, handler)
+    }
+
+    if (isPrimitive(val)) {
+      throw new Error('You can\'t observe a primitive value')
     }
 
     mapperFn.lastValue = val
