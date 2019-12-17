@@ -9,6 +9,7 @@
   "author": "Armagan Amcalar <armagan@amcalar.com>",
   "license": "MIT",
   "dependencies": {
+    "is-primitive": "^3.0.1",
     "lodash.get": "^4.4.2",
     "lodash.isequal": "^4.5.0",
     "observable-slim": "0.1.5"
