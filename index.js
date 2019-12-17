@@ -38,7 +38,8 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { de
       }
 
       if (typeof val != 'undefined') {
-        if (typeof val.__getPath != 'undefined' && !change.currentPath.startsWith(val.__getPath)) return
+        const path = val.__getPath || mapper.path
+        if (path && !change.currentPath.startsWith(path)) return
         else if (get(state, change.currentPath) == val) {
           handler(val, change)
         } else if (typeof mapper.lastValue == 'undefined' || deep ? !isEqual(mapper.lastValue, val) : mapper.lastValue != val || (val.__targetPosition && val.__targetPosition != value.__targetPosition)) {
@@ -63,6 +64,7 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { de
 
     if (typeof mapper == 'string') {
       mapperFn = () => get(state, mapper)
+      mapperFn.path = mapper
     }
 
     let val
