@@ -45,8 +45,10 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { de
         } else if (path && (change.currentPath.startsWith(path) || mapper.path.startsWith(change.currentPath)) && ((deep && change.newValue == change.previousValue) ? !isEqual(change.newValue, change.previousValue) : change.newValue != change.previousValue)) {
           handler(val, change)
           mapper.lastValue = val
-        } else if (path && (!change.currentPath.startsWith(path) && !path.startsWith(change.currentPath))) return
-        else if (get(state, change.currentPath) == val) {
+        } else if (path && (!change.currentPath.startsWith(path) && !path.startsWith(change.currentPath))) {
+          // return
+          // do nothing
+        } else if (get(state, change.currentPath) == val) {
           handler(val, change)
           mapper.lastValue = val
         }
