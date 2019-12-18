@@ -138,3 +138,28 @@ test.cb('Observers will not trigger handlers after component is disposed', t => 
   t.pass()
   t.end()
 })
+
+test.cb('Observe state change with mapState', t => {
+  const { $$register, state } = regie({ initialState: { prop: { value: null } } })
+
+  class Component {
+    constructor () {
+      this.created()
+    }
+
+    created () {
+      this.createdHooks()
+    }
+
+    ['mapState prop.value'] () {
+      t.end()
+    }
+
+    dispose () {}
+  }
+
+  $$register({ Component })
+  new Component()
+
+  state.prop.value = Math.random()
+})
