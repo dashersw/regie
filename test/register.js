@@ -51,13 +51,13 @@ test.cb('Utilize existing __regie_changes__ getter on a component and observe st
 })
 
 test.cb('Utilize magic observer method on a component and observe state change', t => {
-  const { $$register, state } = regie({})
+  const { $$register, state } = regie({ initialState: { prop: { value: null } } })
 
   const val = Math.random()
 
   class Component {
-    constructor (state) {
-      this.props = state
+    constructor (props) {
+      this.props = props
 
       this.created()
     }
@@ -66,27 +66,26 @@ test.cb('Utilize magic observer method on a component and observe state change',
       this.createdHooks()
     }
 
-    ['observe val'] (newValue) {
-      t.is(newValue, val)
+    ['observe prop'] ({ value }) {
+      t.is(value, val)
       t.end()
     }
   }
 
   $$register({ Component })
-
   new Component(state)
 
-  state.val = val
+  state.prop = { value: val }
 })
 
 test('__regie_observer_removers__ exists on initialized component', t => {
-  const { $$register, state } = regie({})
+  const { $$register, state } = regie({ initialState: { prop: { value: null } } })
 
   const val = Math.random()
 
   class Component {
-    constructor (state) {
-      this.props = state
+    constructor (props) {
+      this.props = props
 
       this.created()
     }
@@ -95,8 +94,8 @@ test('__regie_observer_removers__ exists on initialized component', t => {
       this.createdHooks()
     }
 
-    ['observe val'] (newValue) {
-      t.is(newValue, val)
+    ['observe prop.value'] ({ value }) {
+      t.is(value, val)
       t.end()
     }
   }
@@ -109,11 +108,11 @@ test('__regie_observer_removers__ exists on initialized component', t => {
 })
 
 test.cb('Observers will not trigger handlers after component is disposed', t => {
-  const { $$register, state } = regie({})
+  const { $$register, state } = regie({ initialState: { prop: { value: null } } })
 
   class Component {
-    constructor (state) {
-      this.props = state
+    constructor (props) {
+      this.props = props
 
       this.created()
     }
@@ -122,7 +121,7 @@ test.cb('Observers will not trigger handlers after component is disposed', t => 
       this.createdHooks()
     }
 
-    ['observe val'] () {
+    ['observe prop.value'] () {
       t.fail()
     }
 
@@ -134,7 +133,7 @@ test.cb('Observers will not trigger handlers after component is disposed', t => 
   const comp = new Component(state)
   comp.dispose()
 
-  state.val = Math.random()
+  state.prop.value = Math.random()
 
   t.pass()
   t.end()
