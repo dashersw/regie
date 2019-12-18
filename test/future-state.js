@@ -98,7 +98,7 @@ test.cb('Observe future array of parent with mapper function and use its proxy o
   state.val.val = [val2]
 })
 
-test.cb.skip('Observe future array of parent with mapper function and use its proxy once it\'s available even if something else changes', t => {
+test.cb('Observe future array of parent with mapper function and use its proxy once it\'s available even if something else changes', t => {
   const { state, observe } = t.context.store
 
   const val1 = Math.random()
