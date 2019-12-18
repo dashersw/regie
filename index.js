@@ -3,7 +3,6 @@ const EventEmitter = require('events')
 const get = require('lodash.get')
 const isEqual = require('lodash.isequal')
 const register = require('./lib/register')
-const isPrimitive = require('is-primitive')
 
 module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { deep } = { deep: false }) => {
   const bus = new EventEmitter()
