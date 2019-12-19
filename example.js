@@ -20,23 +20,36 @@ state.navigation = { status: { value: 3 } }
 state.navigation = { status: { value: 10 } }
 
 class Component {
-  constructor () {
+  constructor (props) {
+    this.props = props
     this.created()
+  }
+
+  mapStateToProps () {
+    return {
+      navStatus: state => state.navigation.status.value
+    }
   }
 
   created () {
     this.createdHooks()
   }
 
-  ['mapState navigation.status.value'] (newValue, change) {
-    console.log('yay', JSON.stringify(newValue))
+  ['observe navStatus'] (newValue) {
+    console.log('observer', newValue)
   }
 
   dispose () { }
 }
 
 $$register({ Component })
-new Component()
+const comp = new Component({ hello: true })
+console.log(comp.props.navStatus)
 
-state.navigation = { status: { value: 5 } }
+state.navigation = { status: { value: 7 } }
+console.log(comp.props.navStatus)
+
 state.navigation.status = { value: 3 }
+console.log(comp.props.navStatus)
+
+comp.props.navStatus = 11 // throws an error
