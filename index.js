@@ -86,7 +86,7 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { de
     return observeLater(mapperFn, handler)
   }
 
-  const boundRegister = register(observe)
+  const boundRegister = register(observe, state)
   const boundActions = {}
   const boundMutations = {}
 
