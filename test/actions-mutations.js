@@ -56,3 +56,36 @@ test.cb('Observe state updated by a mutation through an action', t => {
 
   actions.setValue(val)
 })
+
+test('Observe state deep change of an object', t => {
+  const newVal = { prop1: 3, prop2: 2 }
+  const { actions, observe, state } = regie({
+    initialState: {
+      val: { prop1: 1, prop2: 2 }
+    },
+    actions: {
+      setValue ({ mutations }, val) {
+        mutations.setValue(val)
+      }
+    },
+    mutations: {
+      setValue ({ state }, val) {
+        state.val = val
+      }
+    }
+  }, { deep: true })
+
+  observe(() => state.val.prop1, newValue => {
+    t.is(newValue, newVal.prop1)
+  })
+
+  observe(() => state.val.prop2, (newValue, change) => {
+    t.fail()
+  })
+
+  observe(() => state.val, newValue => {
+    t.deepEqual(newValue, newVal)
+  })
+
+  actions.setValue(newVal)
+})
