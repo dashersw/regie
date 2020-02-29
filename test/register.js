@@ -327,7 +327,7 @@ test('Throws when observing primitive props', t => {
 })
 
 test('Throws when observing invalid type in mapStateToProps', t => {
-  const { $$register, state } = regie({ initialState: { prop: { value: null } } })
+  const { $$register } = regie({ initialState: { prop: { value: null } } })
 
   class Component {
     constructor (props) {
