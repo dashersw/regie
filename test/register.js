@@ -139,11 +139,12 @@ test.cb('Observers will not trigger handlers after component is disposed', t => 
   t.end()
 })
 
-test.cb('Observe state change with mapState', t => {
+test.cb('Observe state change with mapState string mapper', t => {
   const { $$register, state } = regie({ initialState: { prop: { value: null } } })
 
   class Component {
-    constructor () {
+    constructor (props) {
+      this.props = props || {}
       this.created()
     }
 
@@ -151,7 +152,13 @@ test.cb('Observe state change with mapState', t => {
       this.createdHooks()
     }
 
-    ['mapState prop.value'] () {
+    mapStateToProps () {
+      return {
+        value: 'prop.value'
+      }
+    }
+
+    ['observe value'] () {
       t.end()
     }
 
@@ -162,4 +169,190 @@ test.cb('Observe state change with mapState', t => {
   new Component()
 
   state.prop.value = Math.random()
+})
+
+test.cb('Observe state change with mapState method mapper', t => {
+  const { $$register, state } = regie({ initialState: { prop: { value: null } } })
+
+  const newValue = Math.random()
+
+  class Component {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+    }
+
+    created () {
+      this.createdHooks()
+    }
+
+    mapStateToProps () {
+      return {
+        value: state => state.prop.value
+      }
+    }
+
+    ['observe value'] (newVal) {
+      t.is(newValue, newVal)
+      t.end()
+    }
+
+    dispose () {}
+  }
+
+  $$register({ Component })
+  new Component()
+
+  state.prop.value = newValue
+})
+
+test('Throws when changing prop with mapState', t => {
+  const { $$register } = regie({ initialState: { prop: { value: null } } })
+
+  class Component {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+    }
+
+    created () {
+      this.createdHooks()
+    }
+
+    mapStateToProps () {
+      return {
+        value: state => state.prop.value
+      }
+    }
+
+    dispose () {}
+  }
+
+  $$register({ Component })
+  const cmp = new Component()
+
+  const newVal = Math.random()
+
+  t.throws(() => {
+    cmp.props.value = newVal
+  }, null, `Refusing to update 'value' to ${newVal}. Please use a mutation to mutate the state.`)
+})
+
+test('Get current value of prop after change', t => {
+  const { $$register, state } = regie({ initialState: { prop: { value: null } } })
+
+  class Component {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+    }
+
+    created () {
+      this.createdHooks()
+    }
+
+    mapStateToProps () {
+      return {
+        value: state => state.prop.value
+      }
+    }
+
+    dispose () {}
+  }
+
+  $$register({ Component })
+  const cmp = new Component()
+
+  const newVal = Math.random()
+
+  state.prop.value = newVal
+
+  t.is(cmp.props.value, newVal)
+})
+
+test('Throws when observing non-existing props', t => {
+  const { $$register } = regie({ initialState: { prop: { value: null } } })
+
+  class Component {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+    }
+
+    created () {
+      this.createdHooks()
+    }
+
+    mapStateToProps () {
+      return {
+        value: state => state.prop.value
+      }
+    }
+
+    dispose () {}
+
+    ['observe nope'] () {
+      t.fail()
+    }
+  }
+
+  $$register({ Component })
+
+  t.throws(() => new Component())
+})
+
+test('Throws when observing primitive props', t => {
+  const { $$register, state } = regie({ initialState: { prop: { value: null } } })
+
+  class Component {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+    }
+
+    created () {
+      this.createdHooks()
+    }
+
+    dispose () { }
+
+    ['observe val'] () {
+      t.fail()
+    }
+  }
+
+  $$register({ Component })
+
+  t.throws(() => new Component({ val: state.prop.value }))
+})
+
+test('Throws when observing invalid type in mapStateToProps', t => {
+  const { $$register, state } = regie({ initialState: { prop: { value: null } } })
+
+  class Component {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+    }
+
+    created () {
+      this.createdHooks()
+    }
+
+    mapStateToProps () {
+      return {
+        value: new Date()
+      }
+    }
+
+    dispose () { }
+
+    ['observe value'] () {
+      t.fail()
+    }
+  }
+
+  $$register({ Component })
+
+  t.throws(() => new Component(), null, `Invalid type 'object' for 'value'. mapStateToProps should return an object whose properties are either strings or functions.`)
 })
