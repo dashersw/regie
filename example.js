@@ -27,7 +27,8 @@ class Component {
 
   mapStateToProps () {
     return {
-      navStatus: state => state.navigation.status.value
+      stringValue: 'navigation.status.value',
+      methodValue: state => state.navigation.status.value
     }
   }
 
@@ -35,11 +36,13 @@ class Component {
     this.createdHooks()
   }
 
-  ['observe navStatus'] (newValue) {
-    console.log('observer', newValue)
+  ['observe stringValue'] (newValue, change) {
+    console.log('stringValue', newValue, change)
   }
 
-  dispose () { }
+  ['observe methodValue'] (newValue, change) {
+    console.log('methodValue', newValue, change)
+  }
 }
 
 $$register({ Component })
