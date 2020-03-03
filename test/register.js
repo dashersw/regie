@@ -356,3 +356,57 @@ test('Throws when observing invalid type in mapStateToProps', t => {
 
   t.throws(() => new Component(), null, `Invalid type 'object' for 'value'. mapStateToProps should return an object whose properties are either strings or functions.`)
 })
+
+test('Observe deep array changes with parent object overrides', t => {
+  const { $$register, actions } = regie(
+    {
+      initialState: { val: { arr1: [32, 45], arr2: [1, 2], name: 'hello' } },
+      actions: {
+        setVal ({ mutations }, val) {
+          mutations.setVal(val)
+        }
+      },
+      mutations: {
+        setVal ({ state }, val) {
+          state.val = val
+        }
+      }
+    }, { deep: true })
+  class Component {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+    }
+
+    created () {
+      this.createdHooks()
+    }
+
+    mapStateToProps () {
+      return {
+        arr1: 'val.arr1',
+        arr2: 'val.arr2',
+        name: 'val.name'
+      }
+    }
+
+    dispose () { }
+
+    ['observe arr1'] (arr1) {
+      t.is(JSON.stringify(arr1), JSON.stringify([32, 5]))
+    }
+
+    ['observe arr2'] () {
+      t.fail()
+    }
+
+    ['observe name'] () {
+      t.fail()
+    }
+  }
+  $$register({ Component })
+  new Component()
+
+  const newVal = { arr1: [32, 5], arr2: [1, 2], name: 'hello' }
+  actions.setVal(newVal)
+})
