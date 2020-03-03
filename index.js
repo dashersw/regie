@@ -40,17 +40,17 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { de
 
         if (deep) {
           if (!isEqual(mapper.lastValue, val)) {
-            handler(val, change)
             mapper.lastValue = val
+            handler(val, change)
           }
         } else {
           if (mapper.lastValue != val) {
-            handler(val, change)
             mapper.lastValue = val
+            handler(val, change)
           } else {
             if ((change.currentPath.startsWith(path) || mapper.path.startsWith(change.currentPath)) && change.newValue != change.previousValue) {
-              handler(val, change)
               mapper.lastValue = val
+              handler(val, change)
             }
           }
         }

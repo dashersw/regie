@@ -410,3 +410,73 @@ test('Observe deep array changes with parent object overrides', t => {
   const newVal = { arr1: [32, 5], arr2: [1, 2], name: 'hello' }
   actions.setVal(newVal)
 })
+
+test.cb('Triggering a state change in action handler shouldn\'t trigger a new update batch', t => {
+  class AnotherComponent {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+      this.onAfterRender()
+    }
+    created () {
+      this.createdHooks()
+    }
+    onAfterRender () {
+      actions.setCounter('increase')
+    }
+    dispose () { }
+  }
+  const { $$register, actions, state } = regie(
+    {
+      initialState: {
+        counter: {
+          count: 0
+        },
+        unrelatedState: {
+          state: 'idle', // off, disconnected
+          error: {}
+        }
+      },
+      actions: {
+        setScooterErrorModalDisconnected ({ mutations }) {
+          mutations.setUnrelatedState('disconnected', { code: '324', key: 'fbz', someBoolean: true, title: 'foo', body: 'bar', cta: 'baz' })
+        },
+        setCounter ({ mutations }, operation) {
+          operation == 'increase' ? mutations.setCounter(1) : mutations.setCounter(-1)
+        }
+      },
+      mutations: {
+        setUnrelatedState ({ state }, status, error) {
+          state.unrelatedState = {
+            state: status,
+            error: error || {}
+          }
+        },
+        setCounter ({ state }, count) {
+          state.counter.count += count
+        }
+      }
+    }, { deep: true })
+
+  class Component {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+    }
+    created () {
+      this.createdHooks()
+    }
+    dispose () { }
+    ['observe unrelatedState.state'] (state) {
+      t.pass()
+      t.end()
+
+      $$register({ Component: AnotherComponent })
+      new AnotherComponent()
+    }
+  }
+
+  $$register({ Component })
+  new Component({ unrelatedState: state.unrelatedState })
+  actions.setScooterErrorModalDisconnected()
+})
