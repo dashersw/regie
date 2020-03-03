@@ -42,4 +42,6 @@ $$register({ Component })
 console.log('state', state)
 console.log('state', state.scooter)
 const cmp = new Component({ scooter: state.scooter })
+
+console.log(cmp.props.scooter)
 actions.setScooter(newVal)
