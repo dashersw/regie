@@ -1,58 +1,45 @@
-/* eslint-disable no-new */
-
-const regie = require('.')
-
-const initialState = {
-  navigation: {}
-}
-
-const { state, observe, $$register } = regie({ initialState }, { deep: true })
-
-observe('navigation.status.value', (newValue, change) => {
-  console.log('ust', 'nv', newValue, 'c', change.newValue, '====')
-})
-
-observe('navigation.status', (newValue, change) => {
-  console.log('alt', 'nv', newValue, 'c', change.newValue, '===')
-})
-
-state.navigation = { status: { value: 3 } }
-state.navigation = { status: { value: 10 } }
-
+const regie = require('./')
+const newVal = { location: [32, 5], battery: [10, 32], rid: 'hello' }
+const { $$register, state, actions } = regie(
+  {
+    initialState: { scooter: { location: [32, 45], battery: [10, 32], rid: 'hello' } },
+    actions: {
+      setScooter ({ mutations }, val) {
+        mutations.setVal(val)
+      }
+    },
+    mutations: {
+      setVal ({ state }, val) {
+        state.scooter = val
+      }
+    }
+  }, { deep: true })
 class Component {
   constructor (props) {
-    this.props = props
+    console.log('here are props', props)
+    this.props = props || {}
     this.created()
   }
-
-  mapStateToProps () {
-    return {
-      stringValue: 'navigation.status.value',
-      methodValue: state => state.navigation.status.value
-    }
-  }
-
   created () {
     this.createdHooks()
   }
-
-  ['observe stringValue'] (newValue, change) {
-    console.log('stringValue', newValue, change)
+  dispose () { }
+  ['observe scooter.location'] (location) {
+    console.log('scooter.location changed')
+    console.log(location, newVal.location)
+    // t.end()
   }
-
-  ['observe methodValue'] (newValue, change) {
-    console.log('methodValue', newValue, change)
+  ['observe scooter.rid'] () {
+    console.log('scooter.rid changed')
+    // t.fail()
+  }
+  ['observe scooter.battery'] () {
+    console.log('scooter.battery changed')
+    // t.fail()
   }
 }
-
 $$register({ Component })
-const comp = new Component({ hello: true })
-console.log(comp.props.navStatus)
-
-state.navigation = { status: { value: 7 } }
-console.log(comp.props.navStatus)
-
-state.navigation.status = { value: 3 }
-console.log(comp.props.navStatus)
-
-comp.props.navStatus = 11 // throws an error
+console.log('state', state)
+console.log('state', state.scooter)
+const cmp = new Component({ scooter: state.scooter })
+actions.setScooter(newVal)

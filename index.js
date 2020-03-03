@@ -16,8 +16,6 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { de
         return
       }
 
-      if (deep && isEqual(change.newValue, change.previousValue)) return
-
       bus.emit('root', state, change)
     })
   })
@@ -39,19 +37,22 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { de
 
       if (typeof val != 'undefined') {
         const path = (val && val.__getPath) || mapper.path
-        const newValue = get(state, path)
-        if (deep && mapper.lastValue == val ? !isEqual(mapper.lastValue, val) : mapper.lastValue != val) {
-          handler(val, change)
-          mapper.lastValue = val
-        } else if (path && (change.currentPath.startsWith(path) || mapper.path.startsWith(change.currentPath)) && ((deep && change.newValue == change.previousValue) ? !isEqual(change.newValue, change.previousValue) : change.newValue != change.previousValue)) {
-          handler(newValue, change)
-          mapper.lastValue = newValue
-        } else if (path && (!change.currentPath.startsWith(path) && !path.startsWith(change.currentPath))) {
-          // return
-          // do nothing
-        } else if (get(state, change.currentPath) == val) {
-          handler(val, change)
-          mapper.lastValue = val
+
+        if (deep) {
+          if (!isEqual(mapper.lastValue, val)) {
+            handler(val, change)
+            mapper.lastValue = val
+          }
+        } else {
+          if (mapper.lastValue != val) {
+            handler(val, change)
+            mapper.lastValue = val
+          } else {
+            if ((change.currentPath.startsWith(path) || mapper.path.startsWith(change.currentPath)) && change.newValue != change.previousValue) {
+              handler(val, change)
+              mapper.lastValue = val
+            }
+          }
         }
       } else if (typeof mapper.lastValue != 'undefined' && typeof val == 'undefined') {
         handler(undefined, change)
