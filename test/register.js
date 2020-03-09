@@ -323,7 +323,7 @@ test('Throws when observing primitive props', t => {
 
   $$register({ Component })
 
-  t.throws(() => new Component({ val: state.prop.value }))
+  t.throws(() => new Component({ val: state.prop.value }), /You are passing down/)
 })
 
 test('Throws when observing invalid type in mapStateToProps', t => {
