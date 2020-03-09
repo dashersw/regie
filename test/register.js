@@ -480,3 +480,111 @@ test.cb('Triggering a state change in action handler shouldn\'t trigger a new up
   new Component({ unrelatedState: state.unrelatedState })
   actions.setScooterErrorModalDisconnected()
 })
+
+test.cb('Props of children components should update to the appropriate value when those  props are overridden in the parent', t => {
+  class FirstComponent {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+    }
+    created () {
+      this.createdHooks()
+      $$register({ Component: SecondComponent })
+
+      new SecondComponent({
+        prop1: this.props.prop1,
+        prop2: this.props.prop2,
+        prop3: this.props.prop3
+      })
+    }
+    dispose () { }
+  }
+
+  class SecondComponent {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+    }
+    created () {
+      this.createdHooks()
+    }
+    dispose () { }
+    ['observe prop1.prop4'] (prop4, change) {
+      $$register({ Component: ThirdComponent })
+      new ThirdComponent(this.props)
+    }
+  }
+
+  class ThirdComponent {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+    }
+    created () {
+      this.createdHooks()
+    }
+    dispose () { }
+    ['observe prop2.prop5'] (prop5, change) {
+      t.is(state.prop3.val2[0], this.props.prop3.val2[0])
+      t.end()
+    }
+  }
+
+  const { $$register, actions, state } = regie(
+    {
+      initialState: {
+        prop1: {
+          prop4: 'val1'
+        },
+        prop2: {
+          prop5: null
+        },
+        prop3: {
+          val2: [45, 56]
+        }
+      },
+      actions: {
+        setProp4 ({ mutations }) {
+          mutations.setProp4('val3')
+        },
+        setProp2 ({ mutations }, currentDestination) {
+          mutations.setProp2(currentDestination)
+        },
+        setProp3 ({ mutations }, currentScooter) {
+          mutations.setProp3(currentScooter)
+        }
+      },
+      mutations: {
+        setProp4 ({ state }, value) {
+          state.prop1.prop4 = value
+        },
+        setProp2 ({ state }, currentDestination) {
+          state.prop2 = { prop5: currentDestination }
+        },
+        setProp3 ({ state }, currentScooter) {
+          state.prop3 = currentScooter
+        }
+      }
+    }, { deep: true })
+  $$register({ Component: FirstComponent })
+
+  new FirstComponent({
+    prop1: state.prop1,
+    prop2: state.prop2,
+    prop3: state.prop3
+  })
+
+  actions.setProp4()
+
+  actions.setProp3({
+    val2: [32, 43]
+  })
+
+  actions.setProp2({
+    val4: 'val5',
+    val6: {
+      prop1: 'one thing',
+      prop2: 'another thing'
+    }
+  })
+})
