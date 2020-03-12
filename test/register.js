@@ -588,3 +588,49 @@ test.cb('Props of children components should update to the appropriate value whe
     }
   })
 })
+
+test.cb('Observe deep array element changes', t => {
+  class Component {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+    }
+    created () {
+      this.createdHooks()
+    }
+    ['observe prop1.status'] (status, change) {
+      t.is(state.prop1.status[1].prop3.active, true)
+      t.end()
+    }
+    dispose () { }
+  }
+  const { $$register, actions, state } = regie(
+    {
+      initialState: {
+        prop1: {
+          status: [
+            { prop2: { active: false } },
+            { prop3: { active: false } }
+          ]
+        }
+      },
+      actions: {
+        setProp3 ({ mutations }, value) {
+          mutations.setProp3Active(value)
+        }
+      },
+      mutations: {
+        setProp3Active ({ state }, value) {
+          state.prop1.status[1].prop3.active = value
+        }
+      }
+    }, { deep: true })
+
+  $$register({ Component })
+
+  new Component({
+    prop1: state.prop1
+  })
+
+  actions.setProp3(true)
+})
