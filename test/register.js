@@ -438,7 +438,7 @@ test.cb('Triggering a state change in action handler shouldn\'t trigger a new up
         }
       },
       actions: {
-        setScooterErrorModalDisconnected ({ mutations }) {
+        setUnrelatedState ({ mutations }) {
           mutations.setUnrelatedState('disconnected', { code: '324', key: 'fbz', someBoolean: true, title: 'foo', body: 'bar', cta: 'baz' })
         },
         setCounter ({ mutations }, operation) {
@@ -478,10 +478,10 @@ test.cb('Triggering a state change in action handler shouldn\'t trigger a new up
 
   $$register({ Component })
   new Component({ unrelatedState: state.unrelatedState })
-  actions.setScooterErrorModalDisconnected()
+  actions.setUnrelatedState()
 })
 
-test.cb('Props of children components should update to the appropriate value when those  props are overridden in the parent', t => {
+test.cb('Props of children components should update to the appropriate value when those props are overridden in the parent', t => {
   class FirstComponent {
     constructor (props) {
       this.props = props || {}
@@ -547,22 +547,22 @@ test.cb('Props of children components should update to the appropriate value whe
         setProp4 ({ mutations }) {
           mutations.setProp4('val3')
         },
-        setProp2 ({ mutations }, currentDestination) {
-          mutations.setProp2(currentDestination)
+        setProp2 ({ mutations }, val) {
+          mutations.setProp2(val)
         },
-        setProp3 ({ mutations }, currentScooter) {
-          mutations.setProp3(currentScooter)
+        setProp3 ({ mutations }, val) {
+          mutations.setProp3(val)
         }
       },
       mutations: {
         setProp4 ({ state }, value) {
           state.prop1.prop4 = value
         },
-        setProp2 ({ state }, currentDestination) {
-          state.prop2 = { prop5: currentDestination }
+        setProp2 ({ state }, val) {
+          state.prop2 = { prop5: val }
         },
-        setProp3 ({ state }, currentScooter) {
-          state.prop3 = currentScooter
+        setProp3 ({ state }, val) {
+          state.prop3 = val
         }
       }
     }, { deep: true })
