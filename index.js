@@ -6,6 +6,7 @@ const register = require('./lib/register')
 
 module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { deep } = { deep: false }) => {
   const bus = new EventEmitter()
+  bus.setMaxListeners(0)
 
   const state = slim.create(initialState, false, (changes) => {
     changes.forEach(change => {
