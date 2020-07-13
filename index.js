@@ -1,10 +1,12 @@
 const slim = require('observable-slim')
 const EventEmitter = require('events')
 const get = require('lodash.get')
+const isEqual = require('lodash.isequal')
 const register = require('./lib/register')
 
-module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
+module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}, { deep } = { deep: false }) => {
   const bus = new EventEmitter()
+  bus.setMaxListeners(0)
 
   const state = slim.create(initialState, false, (changes) => {
     changes.forEach(change => {
@@ -13,16 +15,6 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
       Array.isArray(change.target) &&
       change.target.length == change.newValue) {
         return
-      }
-
-      const paths = change.currentPath.split('.')
-      while (paths.length) {
-        const path = paths.join('.')
-        if (path in bus._events) {
-          bus.emit(path, get(state, path), change)
-        }
-
-        paths.pop()
       }
 
       bus.emit('root', state, change)
@@ -44,16 +36,13 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
         return
       }
 
-      if (typeof val != 'undefined' && val.__getPath) {
-        bus.removeListener('root', observer)
-        handler(mapper(state), change)
-        off = observe(mapper, handler)
-      } else if (typeof val != 'undefined') {
-        if (typeof mapper.lastValue == 'undefined' || mapper.lastValue != val) {
+      if (typeof val != 'undefined') {
+        const path = (val && val.__getPath) || mapper.path
+
+        if (!isEqual(mapper.lastValue, val) || (change.currentPath.startsWith(path) && path.length <= change.currentPath.length)) {
+          mapper.lastValue = val
           handler(val, change)
         }
-
-        mapper.lastValue = val
       } else if (typeof mapper.lastValue != 'undefined' && typeof val == 'undefined') {
         handler(undefined, change)
         mapper.lastValue = undefined
@@ -71,6 +60,7 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
 
     if (typeof mapper == 'string') {
       mapperFn = () => get(state, mapper)
+      mapperFn.path = mapper
     }
 
     let val
@@ -83,15 +73,10 @@ module.exports = ({ initialState = {}, actions = {}, mutations = {} } = {}) => {
 
     mapperFn.lastValue = val
 
-    if (typeof val != 'undefined' && val.__getPath) {
-      bus.on(val.__getPath, handler)
-      return () => bus.removeListener(val.__getPath, handler)
-    }
-
     return observeLater(mapperFn, handler)
   }
 
-  const boundRegister = register(observe)
+  const boundRegister = register(observe, state)
   const boundActions = {}
   const boundMutations = {}
 
