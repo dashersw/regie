@@ -12,42 +12,6 @@ test('Register regie as a plugin to another class', t => {
   $$register({ Component })
 
   t.is(typeof Component.prototype.createdHooks, 'function')
-  t.true(Array.isArray(Component.prototype.__regie_changes__))
-})
-
-test.cb('Utilize existing __regie_changes__ getter on a component and observe state change', t => {
-  const { $$register, state } = regie({})
-
-  const val = Math.random()
-
-  const cb = newValue => {
-    t.is(newValue, val)
-    t.end()
-  }
-
-  class Component {
-    constructor (state) {
-      this.state = state
-
-      this.created()
-    }
-
-    created () {
-      this.createdHooks()
-    }
-
-    createdHooks () {}
-
-    get __regie_changes__ () {
-      return [[({ state }) => () => state.val, () => val => cb(val)]]
-    }
-  }
-
-  $$register({ Component })
-
-  new Component(state)
-
-  state.val = val
 })
 
 test.cb('Utilize magic observer method on a component and observe state change', t => {
@@ -137,6 +101,33 @@ test.cb('Observers will not trigger handlers after component is disposed', t => 
 
   t.pass()
   t.end()
+})
+
+test.cb('Regie calls original createdHooks', t => {
+  const { $$register, state } = regie({ initialState: {} })
+
+  class Component {
+    constructor (props) {
+      this.props = props
+
+      this.created()
+    }
+
+    created () {
+      this.createdHooks()
+    }
+
+    createdHooks () {
+      t.pass()
+      t.end()
+    }
+
+    dispose () {}
+  }
+
+  $$register({ Component })
+
+  new Component(state)
 })
 
 test.cb('Observe state change with mapState string mapper', t => {
@@ -233,9 +224,13 @@ test('Throws when changing prop with mapState', t => {
 
   const newVal = Math.random()
 
-  t.throws(() => {
-    cmp.props.value = newVal
-  }, null, `Refusing to update 'value' to ${newVal}. Please use a mutation to mutate the state.`)
+  t.throws(
+    () => {
+      cmp.props.value = newVal
+    },
+    null,
+    `Refusing to update 'value' to ${newVal}. Please use a mutation to mutate the state.`
+  )
 })
 
 test('Get current value of prop after change', t => {
@@ -314,7 +309,7 @@ test('Throws when observing primitive props', t => {
       this.createdHooks()
     }
 
-    dispose () { }
+    dispose () {}
 
     ['observe val'] () {
       t.fail()
@@ -345,7 +340,7 @@ test('Throws when observing invalid type in mapStateToProps', t => {
       }
     }
 
-    dispose () { }
+    dispose () {}
 
     ['observe value'] () {
       t.fail()
@@ -354,7 +349,11 @@ test('Throws when observing invalid type in mapStateToProps', t => {
 
   $$register({ Component })
 
-  t.throws(() => new Component(), null, `Invalid type 'object' for 'value'. mapStateToProps should return an object whose properties are either strings or functions.`)
+  t.throws(
+    () => new Component(),
+    null,
+    `Invalid type 'object' for 'value'. mapStateToProps should return an object whose properties are either strings or functions.`
+  )
 })
 
 test('Observe deep array changes with parent object overrides', t => {
@@ -371,7 +370,9 @@ test('Observe deep array changes with parent object overrides', t => {
           state.val = val
         }
       }
-    }, { deep: true })
+    },
+    { deep: true }
+  )
   class Component {
     constructor (props) {
       this.props = props || {}
@@ -390,7 +391,7 @@ test('Observe deep array changes with parent object overrides', t => {
       }
     }
 
-    dispose () { }
+    dispose () {}
 
     ['observe arr1'] (arr1) {
       t.is(JSON.stringify(arr1), JSON.stringify([32, 5]))
@@ -411,7 +412,7 @@ test('Observe deep array changes with parent object overrides', t => {
   actions.setVal(newVal)
 })
 
-test.cb('Triggering a state change in action handler shouldn\'t trigger a new update batch', t => {
+test.cb("Triggering a state change in action handler shouldn't trigger a new update batch", t => {
   class AnotherComponent {
     constructor (props) {
       this.props = props || {}
@@ -424,7 +425,7 @@ test.cb('Triggering a state change in action handler shouldn\'t trigger a new up
     onAfterRender () {
       actions.setCounter('increase')
     }
-    dispose () { }
+    dispose () {}
   }
   const { $$register, actions, state } = regie(
     {
@@ -439,7 +440,14 @@ test.cb('Triggering a state change in action handler shouldn\'t trigger a new up
       },
       actions: {
         setUnrelatedState ({ mutations }) {
-          mutations.setUnrelatedState('disconnected', { code: '324', key: 'fbz', someBoolean: true, title: 'foo', body: 'bar', cta: 'baz' })
+          mutations.setUnrelatedState('disconnected', {
+            code: '324',
+            key: 'fbz',
+            someBoolean: true,
+            title: 'foo',
+            body: 'bar',
+            cta: 'baz'
+          })
         },
         setCounter ({ mutations }, operation) {
           operation == 'increase' ? mutations.setCounter(1) : mutations.setCounter(-1)
@@ -456,7 +464,9 @@ test.cb('Triggering a state change in action handler shouldn\'t trigger a new up
           state.counter.count += count
         }
       }
-    }, { deep: true })
+    },
+    { deep: true }
+  )
 
   class Component {
     constructor (props) {
@@ -466,8 +476,8 @@ test.cb('Triggering a state change in action handler shouldn\'t trigger a new up
     created () {
       this.createdHooks()
     }
-    dispose () { }
-    ['observe unrelatedState.state'] (state) {
+    dispose () {}
+    ['observe unrelatedState.state'] (/* state */) {
       t.pass()
       t.end()
 
@@ -481,113 +491,118 @@ test.cb('Triggering a state change in action handler shouldn\'t trigger a new up
   actions.setUnrelatedState()
 })
 
-test.cb('Props of children components should update to the appropriate value when those props are overridden in the parent', t => {
-  class FirstComponent {
-    constructor (props) {
-      this.props = props || {}
-      this.created()
-    }
-    created () {
-      this.createdHooks()
-      $$register({ Component: SecondComponent })
-
-      new SecondComponent({
-        prop1: this.props.prop1,
-        prop2: this.props.prop2,
-        prop3: this.props.prop3
-      })
-    }
-    dispose () { }
-  }
-
-  class SecondComponent {
-    constructor (props) {
-      this.props = props || {}
-      this.created()
-    }
-    created () {
-      this.createdHooks()
-    }
-    dispose () { }
-    ['observe prop1.prop4'] (prop4, change) {
-      $$register({ Component: ThirdComponent })
-      new ThirdComponent(this.props)
-    }
-  }
-
-  class ThirdComponent {
-    constructor (props) {
-      this.props = props || {}
-      this.created()
-    }
-    created () {
-      this.createdHooks()
-    }
-    dispose () { }
-    ['observe prop2.prop5'] (prop5, change) {
-      t.is(state.prop3.val2[0], this.props.prop3.val2[0])
-      t.end()
-    }
-  }
-
-  const { $$register, actions, state } = regie(
-    {
-      initialState: {
-        prop1: {
-          prop4: 'val1'
-        },
-        prop2: {
-          prop5: null
-        },
-        prop3: {
-          val2: [45, 56]
-        }
-      },
-      actions: {
-        setProp4 ({ mutations }) {
-          mutations.setProp4('val3')
-        },
-        setProp2 ({ mutations }, val) {
-          mutations.setProp2(val)
-        },
-        setProp3 ({ mutations }, val) {
-          mutations.setProp3(val)
-        }
-      },
-      mutations: {
-        setProp4 ({ state }, value) {
-          state.prop1.prop4 = value
-        },
-        setProp2 ({ state }, val) {
-          state.prop2 = { prop5: val }
-        },
-        setProp3 ({ state }, val) {
-          state.prop3 = val
-        }
+test.cb(
+  'Props of children components should update to the appropriate value when those props are overridden in the parent',
+  t => {
+    class FirstComponent {
+      constructor (props) {
+        this.props = props || {}
+        this.created()
       }
-    }, { deep: true })
-  $$register({ Component: FirstComponent })
+      created () {
+        this.createdHooks()
+        $$register({ Component: SecondComponent })
 
-  new FirstComponent({
-    prop1: state.prop1,
-    prop2: state.prop2,
-    prop3: state.prop3
-  })
-
-  actions.setProp4()
-
-  actions.setProp3({
-    val2: [32, 43]
-  })
-
-  actions.setProp2({
-    val4: 'val5',
-    val6: {
-      prop1: 'one thing',
-      prop2: 'another thing'
+        new SecondComponent({
+          prop1: this.props.prop1,
+          prop2: this.props.prop2,
+          prop3: this.props.prop3
+        })
+      }
+      dispose () {}
     }
-  })
-})
+
+    class SecondComponent {
+      constructor (props) {
+        this.props = props || {}
+        this.created()
+      }
+      created () {
+        this.createdHooks()
+      }
+      dispose () {}
+      ['observe prop1.prop4'] (/* prop4, change */) {
+        $$register({ Component: ThirdComponent })
+        new ThirdComponent(this.props)
+      }
+    }
+
+    class ThirdComponent {
+      constructor (props) {
+        this.props = props || {}
+        this.created()
+      }
+      created () {
+        this.createdHooks()
+      }
+      dispose () {}
+      ['observe prop2.prop5'] (/* prop5, change */) {
+        t.is(state.prop3.val2[0], this.props.prop3.val2[0])
+        t.end()
+      }
+    }
+
+    const { $$register, actions, state } = regie(
+      {
+        initialState: {
+          prop1: {
+            prop4: 'val1'
+          },
+          prop2: {
+            prop5: null
+          },
+          prop3: {
+            val2: [45, 56]
+          }
+        },
+        actions: {
+          setProp4 ({ mutations }) {
+            mutations.setProp4('val3')
+          },
+          setProp2 ({ mutations }, val) {
+            mutations.setProp2(val)
+          },
+          setProp3 ({ mutations }, val) {
+            mutations.setProp3(val)
+          }
+        },
+        mutations: {
+          setProp4 ({ state }, value) {
+            state.prop1.prop4 = value
+          },
+          setProp2 ({ state }, val) {
+            state.prop2 = { prop5: val }
+          },
+          setProp3 ({ state }, val) {
+            state.prop3 = val
+          }
+        }
+      },
+      { deep: true }
+    )
+    $$register({ Component: FirstComponent })
+
+    new FirstComponent({
+      prop1: state.prop1,
+      prop2: state.prop2,
+      prop3: state.prop3
+    })
+
+    actions.setProp4()
+
+    actions.setProp3({
+      val2: [32, 43]
+    })
+
+    actions.setProp2({
+      val4: 'val5',
+      val6: {
+        prop1: 'one thing',
+        prop2: 'another thing'
+      }
+    })
+  }
+)
 
 test.cb('Observe deep array element changes', t => {
   class Component {
@@ -598,20 +613,17 @@ test.cb('Observe deep array element changes', t => {
     created () {
       this.createdHooks()
     }
-    ['observe prop1.status'] (status, change) {
+    ['observe prop1.status'] (/* status, change */) {
       t.is(state.prop1.status[1].prop3.active, true)
       t.end()
     }
-    dispose () { }
+    dispose () {}
   }
   const { $$register, actions, state } = regie(
     {
       initialState: {
         prop1: {
-          status: [
-            { prop2: { active: false } },
-            { prop3: { active: false } }
-          ]
+          status: [{ prop2: { active: false } }, { prop3: { active: false } }]
         }
       },
       actions: {
@@ -624,7 +636,9 @@ test.cb('Observe deep array element changes', t => {
           state.prop1.status[1].prop3.active = value
         }
       }
-    }, { deep: true })
+    },
+    { deep: true }
+  )
 
   $$register({ Component })
 
@@ -633,4 +647,46 @@ test.cb('Observe deep array element changes', t => {
   })
 
   actions.setProp3(true)
+})
+
+test.cb('Observe state change with mapState method mapper twice', t => {
+  const { $$register, state } = regie({ initialState: { prop: [0, 0] } }, { deep: true })
+
+  const newValue = Math.random()
+
+  class Component {
+    constructor (props) {
+      this.props = props || {}
+      this.created()
+    }
+
+    created () {
+      this.createdHooks()
+    }
+
+    mapStateToProps () {
+      return {
+        value: state => state.prop[this.props.key]
+      }
+    }
+
+    ['observe value'] (newVal, oldv) {
+      t.is(newValue, newVal)
+      // t.end()
+    }
+
+    dispose () {}
+  }
+
+  $$register({ Component })
+  new Component({ key: 0 })
+  new Component({ key: 1 })
+
+  setTimeout(() => {
+    t.end()
+  }, 200)
+
+  state.prop[0] = newValue
+  // debugger
+  // state.prop[1] = newValue + 1
 })
