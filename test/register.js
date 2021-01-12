@@ -649,7 +649,51 @@ test.cb('Observe deep array element changes', t => {
   actions.setProp3(true)
 })
 
-test.cb('Observe state change with mapState method mapper twice', t => {
+test.cb(
+  'Multiple instances of the same component can observe state change with mapState method mapper independently',
+  t => {
+    t.plan(1)
+
+    const { $$register, state } = regie({ initialState: { prop: [0, 0] } }, { deep: true })
+
+    const newValue = Math.random()
+
+    class Component {
+      constructor (props) {
+        this.props = props || {}
+        this.created()
+      }
+
+      created () {
+        this.createdHooks()
+      }
+
+      mapStateToProps () {
+        return {
+          value: state => state.prop[this.props.key]
+        }
+      }
+
+      ['observe value'] (newVal) {
+        if (this.props.key == 1) t.fail()
+        t.is(newValue, newVal)
+        t.end()
+      }
+
+      dispose () {}
+    }
+
+    $$register({ Component })
+    new Component({ key: 0 })
+    new Component({ key: 1 })
+
+    state.prop[0] = newValue
+  }
+)
+
+test.cb('Child class instances of a parent component can observe state change with mapState method mapper', t => {
+  t.plan(1)
+
   const { $$register, state } = regie({ initialState: { prop: [0, 0] } }, { deep: true })
 
   const newValue = Math.random()
@@ -664,29 +708,26 @@ test.cb('Observe state change with mapState method mapper twice', t => {
       this.createdHooks()
     }
 
+    dispose () {}
+  }
+
+  class ChildComponent extends Component {
+    ['observe value'] (newVal) {
+      if (this.props.key == 1) t.fail()
+      t.is(newValue, newVal)
+      t.end()
+    }
     mapStateToProps () {
       return {
         value: state => state.prop[this.props.key]
       }
     }
-
-    ['observe value'] (newVal, oldv) {
-      t.is(newValue, newVal)
-      // t.end()
-    }
-
-    dispose () {}
   }
 
-  $$register({ Component })
-  new Component({ key: 0 })
-  new Component({ key: 1 })
+  class GrandchildComponent extends ChildComponent {}
 
-  setTimeout(() => {
-    t.end()
-  }, 200)
+  $$register({ Component })
+  new GrandchildComponent({ key: 0 })
 
   state.prop[0] = newValue
-  // debugger
-  // state.prop[1] = newValue + 1
 })
