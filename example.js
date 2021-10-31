@@ -15,9 +15,9 @@ const { $$register, state, actions } = regie(
     }
   }, { deep: true })
 class Component {
-  constructor (props) {
+  constructor (props = {}) {
     console.log('here are props', props)
-    this.props = props || {}
+    this.props = props
     this.created()
   }
   created () {
