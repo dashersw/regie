@@ -8,7 +8,7 @@ export default (observe, state) =>
     Component.prototype.createdHooks = function () {
       this.__regie_observer_removers__ = []
 
-      for (let propName in this.props) {
+      for (const propName in this.props) {
         if (this.props[propName] == null || typeof this.props[propName] == 'undefined') continue
 
         // Update props when the values passed down are overridden at the root

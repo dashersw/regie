@@ -68,8 +68,6 @@ export default function regie<S, M = MutationTree<S>, A = ActionTree<S, M>>(
     mapper: ((state: S) => any) & { path?: string; lastValue?: any },
     handler: (value: any, change: Change) => void,
   ): () => void {
-    let off: () => void
-
     function observer(_value: unknown, change: Change) {
       let val
       try {
@@ -99,7 +97,7 @@ export default function regie<S, M = MutationTree<S>, A = ActionTree<S, M>>(
     }
 
     bus.on('root', observer)
-    off = () => bus.removeListener('root', observer)
+    const off = () => bus.removeListener('root', observer)
     return () => off()
   }
 

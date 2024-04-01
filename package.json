@@ -19,8 +19,8 @@
   "scripts": {
     "coverage": "nyc report",
     "build": "tsc",
-    "lint": "eslint .",
-    "lint-fix": "eslint --fix .",
+    "lint": "eslint . --ext .ts --ignore-path .gitignore",
+    "lint-fix": "eslint --fix . --ext .ts --ignore-path .gitignore",
     "test": "c8 ava --verbose",
     "prepublishOnly": "npm run lint && npm run build"
   },
@@ -33,15 +33,14 @@
   "devDependencies": {
     "@types/lodash.get": "^4.4.9",
     "@types/lodash.isequal": "^4.5.8",
+    "@typescript-eslint/eslint-plugin": "^7.4.0",
+    "@typescript-eslint/parser": "^7.4.0",
     "ava": "^5.3.1",
     "c8": "^9.1.0",
     "coveralls": "^3.0.2",
-    "eslint": "^5.12.1",
-    "eslint-config-standard": "^12.0.0",
-    "eslint-plugin-import": "^2.15.0",
-    "eslint-plugin-node": "^8.0.1",
-    "eslint-plugin-promise": "^4.0.1",
-    "eslint-plugin-standard": "^4.0.0",
+    "eslint": "8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
     "nyc": "^15.1.0",
     "tsx": "^4.7.1",
     "typescript": "^5.4.3"
