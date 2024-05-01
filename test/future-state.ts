@@ -60,7 +60,7 @@ test('Observe future primitive child of parent with mapper function', t => {
   }
 })
 
-test.skip("Observe future value of parent with mapper function and use its proxy once it's available", t => {
+test("Observe future value of parent with mapper function and use its proxy once it's available", t => {
   const { state, observe } = t.context.store
 
   const val1 = Math.random()
@@ -74,7 +74,7 @@ test.skip("Observe future value of parent with mapper function and use its proxy
       const checkValue = counter ? val2 : val1
 
       t.is(val, checkValue)
-      if (counter) counter++
+      counter++
     },
   )
   state.val = {}
@@ -84,7 +84,7 @@ test.skip("Observe future value of parent with mapper function and use its proxy
   state.val.val.val = val2
 })
 
-test.skip("Observe future array of parent with mapper function and use its proxy once it's available", t => {
+test("Observe future array of parent with mapper function and use its proxy once it's available", t => {
   const { state, observe } = t.context.store
 
   const val1 = Math.random()
@@ -98,7 +98,8 @@ test.skip("Observe future array of parent with mapper function and use its proxy
       const checkValue = counter ? val2 : val1
 
       t.is(val[0], checkValue)
-      if (counter) counter++
+
+      counter++
     },
   )
   state.val = {}

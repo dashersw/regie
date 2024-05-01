@@ -88,7 +88,7 @@ test('Observe new values in existing array with mapper function', t => {
   state.arr.push(t.context.value)
 })
 
-test.skip('Observe values in existing array that will disappear with mapper function', t => {
+test('Observe values in existing array that will disappear with mapper function', t => {
   const { state, observe } = t.context.store
   state.arr.push(t.context.value)
 
@@ -103,7 +103,8 @@ test.skip('Observe values in existing array that will disappear with mapper func
       const checkValue = counter ? val2 : val1
 
       t.is(val, checkValue)
-      if (counter) counter++
+
+      counter++
     },
   )
 

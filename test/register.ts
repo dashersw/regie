@@ -127,7 +127,7 @@ test('Regie calls original createdHooks', t => {
   new Component(state)
 })
 
-test.skip('Observe state change with mapState string mapper', t => {
+test('Observe state change with mapState string mapper', t => {
   const { $$register, state } = regie({ initialState: { prop: { value: null } } })
 
   class Component {
@@ -146,7 +146,9 @@ test.skip('Observe state change with mapState string mapper', t => {
       }
     }
 
-    ['observe value']() {}
+    ['observe value']() {
+      t.pass()
+    }
 
     dispose() {}
   }
@@ -191,7 +193,7 @@ test('Observe state change with mapState method mapper', t => {
   state.prop.value = newValue
 })
 
-test.skip('Throws when changing prop with mapState', t => {
+test('Throws when changing prop with mapState', t => {
   const { $$register } = regie({ initialState: { prop: { value: null } } })
 
   class Component {
@@ -222,12 +224,11 @@ test.skip('Throws when changing prop with mapState', t => {
     () => {
       cmp.props.value = newVal
     },
-    null,
-    `Refusing to update 'value' to ${newVal}. Please use a mutation to mutate the state.`,
+    { message: `Refusing to update 'value' to ${newVal}. Please use a mutation to mutate the state.` },
   )
 })
 
-test.skip('Get current value of prop after change', t => {
+test('Get current value of prop after change', t => {
   const { $$register, state } = regie({ initialState: { prop: { value: null } } })
 
   class Component {
@@ -290,7 +291,7 @@ test('Throws when observing non-existing props', t => {
   t.throws(() => new Component())
 })
 
-test.skip('Throws when observing primitive props', t => {
+test('Throws when observing primitive props', t => {
   const { $$register, state } = regie({ initialState: { prop: { value: null } } })
 
   class Component {
@@ -312,10 +313,12 @@ test.skip('Throws when observing primitive props', t => {
 
   $$register({ Component })
 
-  t.throws(() => new Component({ val: state.prop.value }), /You are passing down/)
+  t.throws(() => new Component({ val: state.prop.value }), {
+    message: `You are passing down 'val' as a prop to the 'Component' component but it is a primitive value in the store and can't be passed down as a prop. Consider passing its parent object as a prop instead and you can still observe the primitive in the 'Component' component.`,
+  })
 })
 
-test.skip('Throws when observing invalid type in mapStateToProps', t => {
+test('Throws when observing invalid type in mapStateToProps', t => {
   const { $$register } = regie({ initialState: { prop: { value: null } } })
 
   class Component {
@@ -343,11 +346,9 @@ test.skip('Throws when observing invalid type in mapStateToProps', t => {
 
   $$register({ Component })
 
-  t.throws(
-    () => new Component(),
-    null,
-    `Invalid type 'object' for 'value'. mapStateToProps should return an object whose properties are either strings or functions.`,
-  )
+  t.throws(() => new Component(), {
+    message: `Invalid type 'object' for 'value'. mapStateToProps should return an object whose properties are either strings or functions.`,
+  })
 })
 
 test('Observe deep array changes with parent object overrides', t => {
