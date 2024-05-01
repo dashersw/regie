@@ -1,5 +1,16 @@
+type RemoveFirstParameter<T> = T extends (first: any, ...rest: infer P) => infer R ? (...args: P) => R : never
+
 type Mutation<S> = (arg: { state: S; mutations: MutationTree<S> }, value: any) => any
-type Action<S, M> = (arg: { state: S; mutations: MutationTree<S>; actions: ActionTree<S, M> }, value: any) => any
+type Action<S, M> = (
+  arg: {
+    state: S
+    mutations: {
+      [K in keyof M]: RemoveFirstParameter<M[K]>
+    }
+    actions: ActionTree<S, M>
+  },
+  value: any,
+) => any
 
 interface MutationTree<S> {
   [key: string]: Mutation<S>
@@ -23,25 +34,25 @@ type Change = {
   currentPath: string
 }
 
-export default function regie<S, M = MutationTree<S>, A = ActionTree<S, M>>(
+export default function regie<S, M extends MutationTree<S>, A>(
   {
     initialState = {} as S,
-    actions = {} as A,
+    actions = {} as A & ActionTree<S, M>,
     mutations = {} as M,
   }: {
     initialState?: S
-    actions?: A
+    actions?: A & ActionTree<S, M>
     mutations?: M
   } = {
     initialState: {} as S,
-    actions: {} as A,
+    actions: {} as A & ActionTree<S, M>,
     mutations: {} as M,
   },
 ): {
   state: S
   observe: (mapper: any, handler: (value: any, change: any) => void) => () => void
-  actions: { [key in keyof A]: (value?: any) => void }
-  mutations: { [key in keyof M]: (value?: any) => void }
+  actions: { [key in keyof A]: RemoveFirstParameter<A[key]> }
+  mutations: { [key in keyof M]: RemoveFirstParameter<M[key]> }
   $$register: any
 } {
   type MapperFn = ((state: S) => any) & { path?: string; lastValue?: any }
@@ -124,8 +135,8 @@ export default function regie<S, M = MutationTree<S>, A = ActionTree<S, M>>(
   }
 
   const boundRegister = register(observe, state)
-  const boundActions = {} as { [key in keyof A]: (value?: any) => void }
-  const boundMutations = {} as { [key in keyof M]: (value?: any) => void }
+  const boundActions = {} as { [key in keyof A]: RemoveFirstParameter<A[key]> }
+  const boundMutations = {} as { [key in keyof M]: RemoveFirstParameter<M[key]> }
 
   const store = {
     state,
