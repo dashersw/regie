@@ -18,14 +18,14 @@ test('Access actions when defined', t => {
 
 test('Call mutation from an action', t => {
   const { actions } = regie({
-    actions: {
-      setValue({ mutations }) {
-        mutations.setValue()
-      },
-    },
     mutations: {
       setValue() {
         t.pass()
+      },
+    },
+    actions: {
+      setValue({ mutations }) {
+        mutations.setValue()
       },
     },
   })
@@ -37,14 +37,17 @@ test('Observe state updated by a mutation through an action', t => {
   const val = Math.random()
 
   const { actions, observe, state } = regie({
+    initialState: {
+      val: 0,
+    },
+    mutations: {
+      setValue({ state }, val: number) {
+        state.val = val
+      },
+    },
     actions: {
       setValue({ mutations }, val) {
         mutations.setValue(val)
-      },
-    },
-    mutations: {
-      setValue({ state }, val) {
-        state.val = val
       },
     },
   })
